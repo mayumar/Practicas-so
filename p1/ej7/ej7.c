@@ -43,6 +43,8 @@ int main(){
         default:
             printf("Soy el padre con PID %d y mi hijo con PID %d\n", getpid(), pid);
 
+            sleep(1);
+
             for(i=0; i<5; i++){
                 
                 kill(pid, SIGUSR1);
