@@ -16,6 +16,12 @@ int main(){
     pid_t pid, childpid;
     int i, status;
 
+    if(signal(SIGUSR1, tratarSennal)==SIG_ERR){
+        perror("signal error");
+        printf("errno value = %d\n", errno);
+        exit(EXIT_FAILURE);
+    }
+
     pid=fork();
 
     switch(pid){
@@ -27,11 +33,7 @@ int main(){
 
         case 0:
             
-            if(signal(SIGUSR1, tratarSennal)==SIG_ERR){
-                perror("signal error");
-                printf("errno value = %d\n", errno);
-                exit(EXIT_FAILURE);
-            }
+            
 
             while(1){
                 pause();
@@ -43,7 +45,7 @@ int main(){
         default:
             printf("Soy el padre con PID %d y mi hijo con PID %d\n", getpid(), pid);
 
-            sleep(1);
+            
 
             for(i=0; i<5; i++){
                 
