@@ -6,9 +6,10 @@ void * contar_lineas(void * arg){
     FILE * nombfich;
     int * n_lineas = malloc(sizeof(int));
     char linea[100];
+    char * nombre_fichero=(char *) arg;
 
-    if((nombfich=fopen(arg, "r"))==NULL){
-        fprintf(stderr, "Error opening file %s\n", arg);
+    if((nombfich=fopen(nombre_fichero, "r"))==NULL){
+        fprintf(stderr, "Error opening file %s\n", nombre_fichero);
         exit(EXIT_FAILURE);
     }
 
@@ -17,7 +18,7 @@ void * contar_lineas(void * arg){
         (*n_lineas)++;
     }
 
-    printf("\nHilo hijo: el fichero %s tiene %d lineas\n", arg, *n_lineas);
+    printf("\nHilo hijo: el fichero %s tiene %d lineas\n", nombre_fichero, *n_lineas);
 
     fclose(nombfich);
 
