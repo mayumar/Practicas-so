@@ -26,12 +26,11 @@ el main usando mallloc(), pruebe a hacer el ejercicio de esta manera*/
 /* Esta es la variable de la que no se puede leer y escribir a la vez */
 int dato = 0; 
 /* numero de lectores en SC */
-int n_lectores = 0;
-/* semaforo general para controlar el acceso n_lectores */ 
-sem_t x; 
-/* semaforo binario (tambien sirve un general) para controlar el acceso a dato */
-//sem_t sc; 
-pthread_mutex_t sc;
+int cuentalect = 0;
+/* semaforo general ( o binario) para controlar el acceso cuentalect */ 
+pthread_mutex_t x; 
+/* semaforo general para controlar el acceso a dato */
+sem_t sc; 
 
 void * Lector(void * arg) 
 {
@@ -40,24 +39,24 @@ void * Lector(void * arg)
 
     for(int i=0; i < DATOS_A_ESCRIBIR_LEER; i++ ) 
     {
-        sem_wait(&x); 
+        pthread_mutex_lock(&x); 
         
-        n_lectores = n_lectores + 1; 
-        if (n_lectores == 1)
-            pthread_mutex_lock(&sc); 
+        cuentalect = cuentalect + 1; 
+        if (cuentalect == 1)
+            sem_wait(&sc); 
         
-        sem_post(&x);
+        pthread_mutex_unlock(&x);
 
         /* leer dato */
         printf("Lector %lu, valor leido = %d\n", (unsigned long)pthread_self(), dato); 
         
-        sem_wait(&x); 
+        pthread_mutex_lock(&x); 
         
-        n_lectores = n_lectores - 1; 
-        if (n_lectores == 0) 
-            pthread_mutex_unlock(&sc); 
+        cuentalect = cuentalect - 1; 
+        if (cuentalect == 0) 
+            sem_post(&sc); 
         
-        sem_post(&x);        
+        pthread_mutex_unlock(&x);        
     }  
   
     pthread_exit(NULL); 
@@ -70,12 +69,12 @@ void * Escritor(void * arg)
 
     for(int i=0; i < DATOS_A_ESCRIBIR_LEER; i++ ) 
     {
-        pthread_mutex_lock(&sc); //No más de un escritor a la vez
+        sem_wait(&sc); //No más de un escritor a la vez
         
         dato = dato + 1; /* modificar el recurso */
         printf("Escritor %lu, incrementando a valor = %d\n", (unsigned long) pthread_self(), dato); 
         
-        pthread_mutex_unlock(&sc);
+        sem_post(&sc);
     }
     pthread_exit(NULL); 
 }
@@ -89,9 +88,9 @@ int main(void)
     pthread_t thlectores[NUM_LECTORES], thescritores[NUM_ESCRITORES];
     //Para proteger el dato que se lee o se escribe
     //sem_init(&sc, 0, 1);   
-    pthread_mutex_init(&sc,NULL); //Binario inicializado a 1
+    pthread_mutex_init(&x,NULL); //Binario inicializado a 1
     //Para actualizar correctamente el numero de lectores que hay en SC
-    sem_init(&x, 0, 1); 
+    sem_init(&sc, 0, 1); 
     
     for(i=0; i < NUM_LECTORES; i++ ) 
         pthread_create(&thlectores[i], NULL, Lector, NULL); 
@@ -104,6 +103,6 @@ int main(void)
         pthread_join(thescritores[i], NULL);
     
     /* eliminar todos los semaforos */ 
-    pthread_mutex_destroy(&sc); 
-    sem_destroy(&x);
+    pthread_mutex_destroy(&x); 
+    sem_destroy(&sc);
 }
