@@ -95,8 +95,17 @@ int main(){
     int i;
     srand(time(NULL));
 
-    sem_init(&cn, 0, 0);
-    sem_init(&pr, 0, TAM_BUFFER);
+    if(sem_init(&cn, 0, 0)!=0){
+        printf("sem_init error\n");
+        printf("errno value= %d, definido como %s\n", errno, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    if(sem_init(&pr, 0, TAM_BUFFER)!=0){
+        printf("sem_init error\n");
+        printf("errno value= %d, definido como %s\n", errno, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
 
     printf("Creando hilos de productores\n");
     for(i=0; i<N_PRODUCTORES; i++){
